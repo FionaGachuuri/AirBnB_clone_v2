@@ -15,7 +15,7 @@ import os
 
 
 class DBStorage:
-    """Manages storage using a database"""
+    """Manages storage using a MYSQL database"""
 
     __engine = None
     __session = None
@@ -44,13 +44,15 @@ class DBStorage:
         or all objects if no class is provided
         """
         result = {}
+        classes = [State, City, User, Place, Amenity, Review]
         if cls:
+            cls = cls if type(cls) is not str else eval(cls)
             objs = self.__session.query(cls).all()
             for obj in objs:
                 key = f"{obj.__class__.__name__}.{obj.id}"
                 result[key] = obj
         else:
-            for class_ in [State, City, User, Place, Amenity, Review]:
+            for class_ in classes:
                 objs = self.__session.query(class_).all()
                 for obj in objs:
                     key = f"{obj.__class__.__name__}.{obj.id}"
