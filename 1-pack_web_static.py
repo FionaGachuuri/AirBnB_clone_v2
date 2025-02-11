@@ -1,39 +1,18 @@
 #!/usr/bin/python3
-"""
-This module creates a Fabric script that generates a .tgz archive
-from the contents of the web_static folder
-"""
+# Fabric script to generate a .tgz archive from web_static
+
 from fabric import task
 from datetime import datetime
-import os
-
 
 @task
-def do_pack(c):
-    """
-    Generates a .tgz archive from the contents of the web_static folder.
-    """
-    try:
-        # Create the versions folder if it doesn't exist
-        if not os.path.exists("versions"):
-            os.makedirs("versions")
+def do_pack(c):  # 'c' is required in Fabric 2+
+    """Generate a .tgz archive from web_static"""
+    date = datetime.now().strftime("%Y%m%d%H%M%S")
+    path = "versions/web_static_{}.tgz".format(date)
 
-        # Generate the timestamp for the archive name
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        archive_name = f"web_static_{timestamp}.tgz"
-        archive_path = f"versions/{archive_name}"
+    c.run("mkdir -p versions")  # Use 'c.run()' instead of 'local'
+    result = c.run(f"tar -czvf {path} web_static", warn=True)
 
-        # Create the .tgz archive
-        print(f"Packing web_static to {archive_path}")
-        c.run(f"tar -cvzf {archive_path} web_static")
-
-        # Check if the archive was created successfully
-        if os.path.exists(archive_path):
-            print(f"web_static packed: {archive_path}
-                  -> {os.path.getsize(archive_path)}Bytes")
-            return archive_path
-        else:
-            return None
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return None
+    if result.ok:
+        return path
+    return None
